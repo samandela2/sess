@@ -32,18 +32,18 @@ public class SecurityConfig {
                 .password(passwordEncoder.encode("pwd123"))
                 .roles("USER")
                 .build();
-        // UserDetails sankarNonOwner = users
-        //         .username("sankar")
-        //         .password(passwordEncoder.encode("qrs456"))
-        //         .roles("NON-OWNER")
-        //         .build();
+        UserDetails jane = users
+                .username("jane")
+                .password(passwordEncoder.encode("abc456"))
+                .roles("USER")
+                .build();
         // UserDetails kumar2 = users
         //         .username("kumar2")
         //         .password(passwordEncoder.encode("xyz789"))
         //         .roles("CARD-OWNER")
         //         .build();
 
-        return new InMemoryUserDetailsManager(john);
+        return new InMemoryUserDetailsManager(john,jane);
     }
 
     @Bean

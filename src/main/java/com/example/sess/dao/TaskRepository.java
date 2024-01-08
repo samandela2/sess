@@ -11,6 +11,5 @@ import com.example.sess.models.Task;
 public interface TaskRepository extends CrudRepository<Task, Long>, PagingAndSortingRepository<Task, Long> {
     
     Task findByIdAndOwner(long id, String owner);
-
     Page<Task> findByOwner(String name, PageRequest pageRequest);
 }

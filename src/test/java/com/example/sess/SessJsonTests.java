@@ -54,7 +54,7 @@ public class SessJsonTests {
                 "owner": "John"
             }
                 """;
-        assertThat(json.parse(expected)).isEqualTo(new Task(99, "1/1", "John"));
+        assertThat(json.parse(expected)).isEqualTo(new Task(99L, "1/1", "John"));
         assertThat(json.parseObject(expected).id()).isEqualTo(99);
         assertThat(json.parseObject(expected).time()).isEqualTo("1/1");
         assertThat(json.parseObject(expected).owner()).isEqualTo("John");
