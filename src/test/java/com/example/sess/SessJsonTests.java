@@ -17,14 +17,16 @@ public class SessJsonTests {
     
     @Autowired
     private JacksonTester<Task> json;
+    @Autowired
+    private JacksonTester<Task[]> jsonList;
     private Task[] tasks;
 
     @BeforeEach
     void setUp() {
         tasks = Arrays.array(
-                new Task(99L, "1/1", "John"),
-                new Task(100L, "2/23", "Ray"),
-                new Task(101L, "4/20", "Jay")
+                new Task(99L, "1/1", "john"),
+                new Task(100L, "2/23", "ray"),
+                new Task(101L, "4/20", "jay")
         );
     }
 
@@ -58,8 +60,21 @@ public class SessJsonTests {
         assertThat(json.parseObject(expected).owner()).isEqualTo("John");
 
     }
-    
 
+    @Test
+    public void taskListDeserializationTest() throws IOException{
+        String expected = """
+                [
+                    {"id":99, "time":"1/1","owner":"john"},
+                    {"id":100, "time":"2/23","owner":"ray"},
+                    {"id":101, "time":"4/20","owner":"jay"}
+
+                ]
+                """;
+
+        assertThat(jsonList.parse(expected)).isEqualTo(tasks);
+
+    }
 }
 
 
