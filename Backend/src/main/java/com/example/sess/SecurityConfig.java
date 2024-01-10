@@ -15,11 +15,10 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests()
+        http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/tasks/**")
-                .hasRole("USER")
-                .and()
-                .csrf().disable()
+                .hasRole("USER"))
+                .csrf(csrf -> csrf.disable())
                 .httpBasic();
         return http.build();
     }

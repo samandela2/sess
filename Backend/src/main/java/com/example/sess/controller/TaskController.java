@@ -5,18 +5,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.sess.models.Task;
 
-import jakarta.websocket.server.PathParam;
-
 import com.example.sess.dao.TaskRepository;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -26,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/tasks")
@@ -62,17 +59,39 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> creatTask(@RequestBody Task newTaskRequest, UriComponentsBuilder ucb, Principal principal) {
-        
-        Task tasktoSave = new Task(null, newTaskRequest.time() ,principal.getName());
+    public ResponseEntity<Void> creatTask(@RequestBody Task newTaskRequest, UriComponentsBuilder ucb,
+            Principal principal) {
+
+        Task tasktoSave = new Task(null, newTaskRequest.getTime(), principal.getName());
         Task savedTask = taskRepository.save(tasktoSave);
 
         URI locationOfNewTask = ucb.path("tasks/{id}")
-            .buildAndExpand(savedTask.id())
-            .toUri();
+                .buildAndExpand(savedTask.getId())
+                .toUri();
 
         return ResponseEntity.created(locationOfNewTask).build();
     }
-    
+
+    @PutMapping("/{requestId}")
+    public ResponseEntity<Void> updateTask(@PathVariable Long requestId, @RequestBody Task taskToUpdate,
+            Principal principal) {
+        Task task = findTask(requestId, principal.getName());
+        if (task != null) {
+            Task updateTask = new Task(task.getId(), taskToUpdate.getTime(), principal.getName());
+            taskRepository.save(updateTask);
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{requestId}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long requestId, Principal principal) {
+        if (taskRepository.existsByIdAndOwner(requestId, principal.getName())) {
+            taskRepository.deleteById(requestId);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }

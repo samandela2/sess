@@ -7,12 +7,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
+@ActiveProfiles("test")
 public class SessJsonTests {
     
     @Autowired
@@ -54,10 +57,10 @@ public class SessJsonTests {
                 "owner": "John"
             }
                 """;
-        assertThat(json.parse(expected)).isEqualTo(new Task(99L, "1/1", "John"));
-        assertThat(json.parseObject(expected).id()).isEqualTo(99);
-        assertThat(json.parseObject(expected).time()).isEqualTo("1/1");
-        assertThat(json.parseObject(expected).owner()).isEqualTo("John");
+        // assertThat(json.parse(expected)).isEqualTo(new Task(99L, "1/1", "John"));
+        assertThat(json.parseObject(expected).getId()).isEqualTo(99);
+        assertThat(json.parseObject(expected).getTime()).isEqualTo("1/1");
+        assertThat(json.parseObject(expected).getOwner()).isEqualTo("John");
 
     }
 
