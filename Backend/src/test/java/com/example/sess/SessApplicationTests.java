@@ -7,6 +7,7 @@ import java.net.URI;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -14,265 +15,222 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.jayway.jsonpath.JsonPath;
 
+import jakarta.transaction.Transactional;
 import net.minidev.json.JSONArray;
 
 import com.example.sess.models.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.http.MediaType;
+
+
+
+
+
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@SuppressWarnings("null")
 class SessApplicationTests {
 
 	@Autowired
-	TestRestTemplate testRestTemplate;
+	private MockMvc mockMvc;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 
 	@Test
 	void contextLoads() {
 	}
 
-	// //Read
-	// @Test
-	// void shouldReturnATaskWhenATaskIsSaved() {
-	// 	ResponseEntity<String> response = testRestTemplate
-	// 			.withBasicAuth("john", "pwd123")
-	// 			.getForEntity("/tasks/99", String.class);
+	// Read
+	@Test
+void shouldReturnATaskWhenATaskIsSaved() throws Exception {
+    mockMvc.perform(get("/tasks/99").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.id").value(99))
+           .andExpect(jsonPath("$.time").value("1/1"));
 
-	// 	assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-	// 	DocumentContext documentContext = JsonPath.parse(response.getBody());
-	// 	Number id = documentContext.read("$.id");
-	// 	assertThat(id).isEqualTo(99);
-	// 	String time = documentContext.read("$.time");
-	// 	assertThat(time).isEqualTo("1/1");
-		
-	// 	ResponseEntity<String> badresponse = testRestTemplate
-	// 			.withBasicAuth("john", "pwd123")
-	// 			.getForEntity("/tasks/1199", String.class);
-
-	// 	assertThat(badresponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-	// }
-
-// 	@Test
-// 	void shouldReturnAllTasksWhenListIsRequested(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john","pwd123")
-// 			.getForEntity("/tasks", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		int taskCount = documentContext.read("$.length()");
-// 		assertThat(taskCount).isEqualTo(3);
-
-// 		JSONArray ids = documentContext.read("$..id");
-// 		assertThat(ids).containsExactlyInAnyOrder(99,100,102);
-// 		JSONArray times = documentContext.read("$..time");
-// 		assertThat(times).containsExactlyInAnyOrder("1/1","2/1","4/1");
-// 	}
-
-// 	@Test
-// 	void shouldNotReturnTaskWithUnknownId(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity("/tasks/10000", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);	
-// 		assertThat(response.getBody()).isBlank();
-// 	}
-
-// 	@Test
-// 	void shouldReturnPageOfTasks(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity("/tasks?page=0&size=1", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		// System.out.println(response.getBody());
-
-// 		JSONArray page = documentContext.read("$[*]");
-// 		assertThat(page.size()).isEqualTo(1);
-
-// 	}
-
-// 	@Test
-// 	void ShouldReturnPageOfTasksDesc(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity("/tasks?page=0&size=1&sort=time,desc", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		// System.out.println(response.getBody());
-
-// 		JSONArray page = documentContext.read("$[*]");
-// 		assertThat(page.size()).isEqualTo(1);
-
-// 		String time = documentContext.read("$[0].time");
-// 		assertThat(time).isEqualTo("4/1");
-
-// 	}
-
-// 	@Test
-// 	void ShouldReturnPageOfTasksASC(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity("/tasks?page=0&size=1&sort=time,asc", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		// System.out.println(response.getBody());
-
-// 		JSONArray page = documentContext.read("$[*]");
-// 		assertThat(page.size()).isEqualTo(1);
-
-// 		String time = documentContext.read("$[0].time");
-// 		assertThat(time).isEqualTo("1/1");
-// 	}
-
-// 	@Test
-// 	void shouldReturnASortedPageOfTaskWithNoParametersAndUseDefaultValues(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity("/tasks", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		JSONArray page = documentContext.read("$[*]");
-// 		assertThat(page.size()).isEqualTo(3);
-
-// 		JSONArray times = documentContext.read("$..time");
-// 		assertThat(times).containsExactly("1/1","2/1","4/1");
-
-// 	}
-
-// 	//create
-// 	@Test
-// 	@DirtiesContext
-// 	void shouldCreateANewTask(){
-// 		Task newTask = new Task(110L, "5/1", "john");
-// 		ResponseEntity<Void> createResponse = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.postForEntity("/tasks", newTask, Void.class);
-// 		assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-// 		URI locationOfNewTask = createResponse.getHeaders().getLocation();
-// 		ResponseEntity<String> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.getForEntity(locationOfNewTask, String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-// 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-// 		Number idNumber = documentContext.read("$.id");
-// 		assertThat(idNumber).isNotNull();
-// 		String time = documentContext.read("$.time");
-// 		assertThat(time).isEqualTo("5/1");
-// 	}
+    mockMvc.perform(get("/tasks/1199").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isNotFound());
+}
 
 
-// 	//update
-// 	@Test
-// 	@DirtiesContext
-// 	void shoudlUpdateExistingTask(){
-// 		Task taskToUpdate = new Task(null, "1/15", null);
-// 		HttpEntity<Task> request = new HttpEntity<Task>(taskToUpdate);
-
-// 		ResponseEntity<Void> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.exchange("/tasks/99", HttpMethod.PUT, request, Void.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
-// 		ResponseEntity<String> response1 = testRestTemplate
-// 				.withBasicAuth("john", "pwd123")
-// 				.getForEntity("/tasks/99", String.class);
-
-// 		assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.OK);
-// 		DocumentContext documentContext = JsonPath.parse(response1.getBody());
-// 		String time = documentContext.read("$.time");
-// 		assertThat(time).isEqualTo("1/15");
-// 		}
-
-// 	@Test
-// 	void shouldNotUpdateNonExistingTask(){
-// 		Task taskToUpdate = new Task(null, "1/15", null);
-// 		HttpEntity<Task> request = new HttpEntity<Task>(taskToUpdate);
-
-// 		ResponseEntity<Void> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.exchange("/tasks/999999", HttpMethod.PUT, request, Void.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-// 	}
+@Test
+void shouldReturnAllTasksWhenListIsRequested() throws Exception {
+    mockMvc.perform(get("/tasks").with(httpBasic("john","pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.length()").value(3))
+           .andExpect(jsonPath("$..id").value(containsInAnyOrder(99, 100, 102)))
+           .andExpect(jsonPath("$..time").value(containsInAnyOrder("1/1", "2/1", "4/1")));
+}
 
 
-// 	//delete
-// 	@Test
-// 	@DirtiesContext
-// 	void shouldDeleteAnExistingTask(){
-// 		ResponseEntity<Void> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.exchange("/tasks/99", HttpMethod.DELETE, null,Void.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-// 	}
+	
+	@Test
+void shouldNotReturnTaskWithUnknownId() throws Exception {
+    mockMvc.perform(get("/tasks/10000").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isNotFound())
+           .andExpect(content().string(""));
+}
+
+@Test
+void shouldReturnPageOfTasks() throws Exception {
+    mockMvc.perform(get("/tasks?page=0&size=1").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$[*]", hasSize(1)));
+}
+
+	
+@Test
+void ShouldReturnPageOfTasksDesc() throws Exception {
+    mockMvc.perform(get("/tasks?page=0&size=1&sort=time,desc").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$[*]", hasSize(1)))
+           .andExpect(jsonPath("$[0].time").value("4/1"));
+}
+
+@Test
+void ShouldReturnPageOfTasksASC() throws Exception {
+    mockMvc.perform(get("/tasks?page=0&size=1&sort=time,asc").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$[*]", hasSize(1)))
+           .andExpect(jsonPath("$[0].time").value("1/1"));
+}
+
+@Test
+void shouldReturnASortedPageOfTaskWithNoParametersAndUseDefaultValues() throws Exception {
+    mockMvc.perform(get("/tasks").with(httpBasic("john", "pwd123")))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$[*]", hasSize(3)))
+           .andExpect(jsonPath("$..time").value(containsInAnyOrder("1/1", "2/1", "4/1")));
+}
+
+//create
+@Test
+@Transactional
+void shouldCreateANewTask() throws Exception {
+    Task newTask = new Task(110L, "5/1", "john");
+    String newTaskJson = objectMapper.writeValueAsString(newTask);
+
+    MvcResult result = mockMvc.perform(post("/tasks")
+                            .with(httpBasic("john", "pwd123"))
+.contentType(MediaType.APPLICATION_JSON)
+.content(newTaskJson))
+.andExpect(status().isCreated())
+.andReturn();
+
+   String location = result.getResponse().getHeader("Location");
+
+   mockMvc.perform(get(location).with(httpBasic("john", "pwd123")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.id").isNumber())
+          .andExpect(jsonPath("$.time").value("5/1"));
+}
+
+	
+	//update
+	@Test
+	@Transactional
+	void shouldUpdateExistingTask() throws Exception {
+		Task taskToUpdate = new Task(null, "1/15", null);
+		String taskJson = objectMapper.writeValueAsString(taskToUpdate);
+	
+		mockMvc.perform(put("/tasks/99")
+				.with(httpBasic("john", "pwd123"))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(taskJson))
+				.andExpect(status().isNoContent());
+	
+		mockMvc.perform(get("/tasks/99").with(httpBasic("john", "pwd123")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.time").value("1/15"));
+	}
+	
+
+	@Test
+	@Transactional
+void shouldNotUpdateNonExistingTask() throws Exception {
+    Task taskToUpdate = new Task(null, "1/15", null);
+    String taskJson = objectMapper.writeValueAsString(taskToUpdate);
+
+    mockMvc.perform(put("/tasks/999999")
+            .with(httpBasic("john", "pwd123"))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(taskJson))
+            .andExpect(status().isNotFound());
+}
 
 
-// 	@Test
-// 	@DirtiesContext
-// 	void shouldNotDeleteANonExistingTask(){
-// 		ResponseEntity<Void> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.exchange("/tasks/99999", HttpMethod.DELETE,null,Void.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-// 	}
 
-// 	@Test
-// 	void shouldNotAllowDeletionOfTasksTheyDoNotOwn(){
-// 		ResponseEntity<Void> response = testRestTemplate
-// 			.withBasicAuth("john", "pwd123")
-// 			.exchange("/tasks/101", HttpMethod.DELETE,null,Void.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
-// 		ResponseEntity<String> response1 = testRestTemplate
-// 				.withBasicAuth("jane", "abc456")
-// 				.getForEntity("/tasks/101", String.class);
+	//delete
+	@Test
+	@Transactional
+	void shouldDeleteAnExistingTask() throws Exception {
+		mockMvc.perform(delete("/tasks/99").with(httpBasic("john", "pwd123")))
+			   .andExpect(status().isNoContent());
+	}
+	
+	@Test
+	@Transactional
+	void shouldNotDeleteANonExistingTask() throws Exception {
+		mockMvc.perform(delete("/tasks/99999").with(httpBasic("john", "pwd123")))
+			   .andExpect(status().isNotFound());
+	}
+	
+	
+	@Test
+	@Transactional
+	void shouldNotAllowDeletionOfTasksTheyDoNotOwn() throws Exception {
+		mockMvc.perform(delete("/tasks/101").with(httpBasic("john", "pwd123")))
+			   .andExpect(status().isNotFound());
+	
+		mockMvc.perform(get("/tasks/101").with(httpBasic("jane", "abc456")))
+			   .andExpect(status().isOk())
+			   .andExpect(jsonPath("$.id").value(101))
+			   .andExpect(jsonPath("$.time").value("3/1"));
+	}
+	
 
-// 		assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.OK);
-// 		DocumentContext documentContext = JsonPath.parse(response1.getBody());
-// 		Number id = documentContext.read("$.id");
-// 		assertThat(id).isEqualTo(101);
-// 		String time = documentContext.read("$.time");
-// 		assertThat(time).isEqualTo("3/1");
-// 	}
+	//security
+	@Test
+	void shouldNotReturnTaskWithBadCredentials() throws Exception {
+		mockMvc.perform(get("/tasks/99").with(httpBasic("IamBad", "pwd123")))
+			   .andExpect(status().isUnauthorized());
+	
+		mockMvc.perform(get("/tasks").with(httpBasic("IamStillBad", "pwd123")))
+			   .andExpect(status().isUnauthorized());
+	}
+	
+	@Test
+	void shouldRejectUsersWhoIsNotTaskOwner() throws Exception {
+		mockMvc.perform(get("/tasks/99").with(httpBasic("jane", "abc456")))
+			   .andExpect(status().isNotFound());
+	}
+	
+	@Test
+	void shouldNotAllowAccessToTaskTheyDoNotOwn() throws Exception {
+		mockMvc.perform(get("/tasks/101").with(httpBasic("jane", "abc456")))
+		.andExpect(status().isOk());
+		}
+	
 
-// 	//security
-// 	@Test
-// 	void shouldNotReturnTaskWithBadCredentials(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 				.withBasicAuth("IamBad", "pwd123")
-// 				.getForEntity("/tasks/99", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-// 		ResponseEntity<String> response1 = testRestTemplate
-// 			.withBasicAuth("IamStillBad", "pwd123")
-// 			.getForEntity("/tasks", String.class);
-// 		assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-// 	}
-
-// 	@Test
-// 	void shouldRejectUsersWhoIsNotTaskOwner(){
-// 		ResponseEntity<String> response = testRestTemplate
-// 				.withBasicAuth("jane", "abc456")
-// 				.getForEntity("/tasks/99", String.class);
-// 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-// 	}
-
-// 	// @Test
-// 	// void shouldNotAllowAccessToTaskTheyDoNotOwn(){
-// 	// 	ResponseEntity<String> response = testRestTemplate
-// 	// 			.withBasicAuth("jane", "abc456")
-// 	// 			.getForEntity("/tasks/101", String.class);
-// 	// 	assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		
-// 	// }
 
 	
 
