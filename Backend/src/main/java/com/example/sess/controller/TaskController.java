@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.sess.models.Task;
+import com.example.sess.services.TaskService;
 
-import com.example.sess.dao.TaskRepository;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,20 +27,17 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
-    private TaskRepository taskRepository;
 
-    public TaskController(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
+    private TaskService taskService;
 
-    private Task findTask(Long id, String ownerName) {
-        return taskRepository.findByIdAndOwner(id, ownerName);
+    public TaskController(TaskService taskService){
+        this.taskService = taskService;
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Task> findById(@PathVariable Long requestId, Principal principal) {
 
-        Task task = findTask(requestId, principal.getName());
+        Task task = taskService.findTask(requestId, principal.getName());
         if (task != null) {
             return ResponseEntity.ok(task);
         }
@@ -50,7 +46,7 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<Task>> findAll(Pageable pageable, Principal principal) {
-        Page<Task> page = taskRepository.findByOwner(principal.getName(),
+        Page<Task> page = taskService.findByOwner(principal.getName(),
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
@@ -63,7 +59,7 @@ public class TaskController {
             Principal principal) {
 
         Task tasktoSave = new Task(null, newTaskRequest.getTime(), principal.getName());
-        Task savedTask = taskRepository.save(tasktoSave);
+        Task savedTask = taskService.saveTask(tasktoSave);
 
         URI locationOfNewTask = ucb.path("tasks/{id}")
                 .buildAndExpand(savedTask.getId())
@@ -75,10 +71,10 @@ public class TaskController {
     @PutMapping("/{requestId}")
     public ResponseEntity<Void> updateTask(@PathVariable Long requestId, @RequestBody Task taskToUpdate,
             Principal principal) {
-        Task task = findTask(requestId, principal.getName());
+        Task task = taskService.findTask(requestId, principal.getName());
         if (task != null) {
             Task updateTask = new Task(task.getId(), taskToUpdate.getTime(), principal.getName());
-            taskRepository.save(updateTask);
+            taskService.saveTask(updateTask);
             return ResponseEntity.noContent().build();
         }
 
@@ -87,8 +83,8 @@ public class TaskController {
 
     @DeleteMapping("/{requestId}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long requestId, Principal principal) {
-        if (taskRepository.existsByIdAndOwner(requestId, principal.getName())) {
-            taskRepository.deleteById(requestId);
+        if (taskService.existsByIdAndOwner(requestId, principal.getName())) {
+            taskService.deleteById(requestId);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
