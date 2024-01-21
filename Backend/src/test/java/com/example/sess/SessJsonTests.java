@@ -64,17 +64,17 @@ public class SessJsonTests {
         assertThat(json.write(task)).hasJsonPathNumberValue("@.id");
         assertThat(json.write(task)).extractingJsonPathNumberValue("@.id")
                 .isEqualTo(99);
-        assertThat(json.write(task)).hasJsonPathValue("@.start_time");
-        assertThat(json.write(task)).extractingJsonPathValue("@.start_time")
+        assertThat(json.write(task)).hasJsonPathValue("@.startTime");
+        assertThat(json.write(task)).extractingJsonPathValue("@.startTime")
                 .isEqualTo("2024-01-01 10:00:00");
-        assertThat(json.write(task)).hasJsonPathValue("@.end_time");
-        assertThat(json.write(task)).extractingJsonPathValue("@.end_time")
+        assertThat(json.write(task)).hasJsonPathValue("@.endTime");
+        assertThat(json.write(task)).extractingJsonPathValue("@.endTime")
                 .isEqualTo("2024-01-01 11:00:00");
-        assertThat(json.write(task)).hasJsonPathNumberValue("@.owner_id");
-        assertThat(json.write(task)).extractingJsonPathNumberValue("@.owner_id")
+        assertThat(json.write(task)).hasJsonPathNumberValue("@.ownerId");
+        assertThat(json.write(task)).extractingJsonPathNumberValue("@.ownerId")
                 .isEqualTo(30);
-        assertThat(json.write(task)).hasJsonPathNumberValue("@.client_id");
-        assertThat(json.write(task)).extractingJsonPathNumberValue("@.client_id")
+        assertThat(json.write(task)).hasJsonPathNumberValue("@.clientId");
+        assertThat(json.write(task)).extractingJsonPathNumberValue("@.clientId")
                 .isEqualTo(50);
 
         assertThat(json.write(task)).hasJsonPathStringValue("@.location");
@@ -95,17 +95,17 @@ public class SessJsonTests {
         assertThat(json.write(task)).hasJsonPathNumberValue("@.id");
         assertThat(json.write(task)).extractingJsonPathNumberValue("@.id")
                 .isEqualTo(101);
-        assertThat(json.write(task)).hasJsonPathValue("@.start_time");
-        assertThat(json.write(task)).extractingJsonPathValue("@.start_time")
+        assertThat(json.write(task)).hasJsonPathValue("@.startTime");
+        assertThat(json.write(task)).extractingJsonPathValue("@.startTime")
                 .isEqualTo("2024-03-01 12:00:00");
-        assertThat(json.write(task)).hasJsonPathValue("@.end_time");
-        assertThat(json.write(task)).extractingJsonPathValue("@.end_time")
+        assertThat(json.write(task)).hasJsonPathValue("@.endTime");
+        assertThat(json.write(task)).extractingJsonPathValue("@.endTime")
                 .isEqualTo("2024-03-01 16:00:00");
-        assertThat(json.write(task)).hasJsonPathNumberValue("@.owner_id");
-        assertThat(json.write(task)).extractingJsonPathNumberValue("@.owner_id")
+        assertThat(json.write(task)).hasJsonPathNumberValue("@.ownerId");
+        assertThat(json.write(task)).extractingJsonPathNumberValue("@.ownerId")
                 .isEqualTo(30);
-        assertThat(json.write(task)).hasEmptyJsonPathValue("@.client_id");
-        // assertThat(json.write(task)).extractingJsonPathNumberValue("@.client_id")
+        assertThat(json.write(task)).hasEmptyJsonPathValue("@.clientId");
+        // assertThat(json.write(task)).extractingJsonPathNumberValue("@.clientId")
         // .isNull();
 
         assertThat(json.write(task)).hasJsonPathStringValue("@.location");
@@ -130,10 +130,10 @@ public class SessJsonTests {
         String expected = """
                 {
                     "id": 99,
-                    "start_time": "2024-01-01 10:00:00",
-                    "end_time": "2024-01-01 11:00:00",
-                    "owner_id": 30,
-                    "client_id": 50,
+                    "startTime": "2024-01-01 10:00:00",
+                    "endTime": "2024-01-01 11:00:00",
+                    "ownerId": 30,
+                    "clientId": 50,
                     "location": "3333 hell st, San Francisco, CA, 94444",
                     "type": "appointment",
                     "description": "happy day"
@@ -143,12 +143,12 @@ public class SessJsonTests {
                 LocalDateTime.parse("01/01/2024 11:00:00", formatter), 30L, 50L,
                 "3333 hell st, San Francisco, CA, 94444", "appointment", "happy day"));
         assertThat(json.parseObject(expected).getId()).isEqualTo(99);
-        assertThat(json.parseObject(expected).getStart_time())
+        assertThat(json.parseObject(expected).getStartTime())
                 .isEqualTo(LocalDateTime.parse("01/01/2024 10:00:00", formatter));
-        assertThat(json.parseObject(expected).getEnd_time())
+        assertThat(json.parseObject(expected).getEndTime())
                 .isEqualTo(LocalDateTime.parse("01/01/2024 11:00:00", formatter));
-        assertThat(json.parseObject(expected).getOwner_id()).isEqualTo(30L);
-        assertThat(json.parseObject(expected).getClient_id()).isEqualTo(50L);
+        assertThat(json.parseObject(expected).getOwnerId()).isEqualTo(30L);
+        assertThat(json.parseObject(expected).getClientId()).isEqualTo(50L);
         assertThat(json.parseObject(expected).getType()).isEqualTo("appointment");
         assertThat(json.parseObject(expected).getDescription()).isEqualTo("happy day");
     }
@@ -158,9 +158,9 @@ public class SessJsonTests {
         String expected = """
                 {
                     "id": 101,
-                    "start_time": "2024-03-01 12:00:00",
-                    "end_time": "2024-03-01 16:00:00",
-                    "owner_id": 30,
+                    "startTime": "2024-03-01 12:00:00",
+                    "endTime": "2024-03-01 16:00:00",
+                    "ownerId": 30,
                     "location": "33 hl st, San Francisco, CA, 94444",
                     "type": "event",
                     "description": "happy day"
@@ -170,12 +170,12 @@ public class SessJsonTests {
                 LocalDateTime.parse("03/01/2024 16:00:00", formatter), 30L, null, "33 hl st, San Francisco, CA, 94444",
                 "event", "happy day"));
         assertThat(json.parseObject(expected).getId()).isEqualTo(101);
-        assertThat(json.parseObject(expected).getStart_time())
+        assertThat(json.parseObject(expected).getStartTime())
                 .isEqualTo(LocalDateTime.parse("03/01/2024 12:00:00", formatter));
-        assertThat(json.parseObject(expected).getEnd_time())
+        assertThat(json.parseObject(expected).getEndTime())
                 .isEqualTo(LocalDateTime.parse("03/01/2024 16:00:00", formatter));
-        assertThat(json.parseObject(expected).getOwner_id()).isEqualTo(30L);
-        assertThat(json.parseObject(expected).getClient_id()).isNull();
+        assertThat(json.parseObject(expected).getOwnerId()).isEqualTo(30L);
+        assertThat(json.parseObject(expected).getClientId()).isNull();
         ;
         assertThat(json.parseObject(expected).getType()).isEqualTo("event");
         assertThat(json.parseObject(expected).getDescription()).isEqualTo("happy day");
@@ -186,9 +186,9 @@ public class SessJsonTests {
     public void taskListDeserializationTest() throws IOException {
         String expected = """
                 [
-                    {"id":99,"start_time": "2024-01-01 10:00:00","end_time": "2024-01-01 11:00:00","owner_id": 30,"client_id": 50,"location": "3333 hell st, San Francisco, CA, 94444","type": "appointment","description": "happy day"},
-                    {"id":101,"start_time": "2024-03-01 12:00:00","end_time": "2024-03-01 16:00:00","owner_id": 30,"location": "33 hl st, San Francisco, CA, 94444","type": "event","description": "happy day"},
-                    {"id":100,"start_time": "2024-02-01 10:00:00","end_time": "2024-02-01 11:00:00","owner_id": 31,"client_id": 50,"location": "3333 hell st, San Francisco, CA, 94444","type": "appointment","description": null}
+                    {"id":99,"startTime": "2024-01-01 10:00:00","endTime": "2024-01-01 11:00:00","ownerId": 30,"clientId": 50,"location": "3333 hell st, San Francisco, CA, 94444","type": "appointment","description": "happy day"},
+                    {"id":101,"startTime": "2024-03-01 12:00:00","endTime": "2024-03-01 16:00:00","ownerId": 30,"location": "33 hl st, San Francisco, CA, 94444","type": "event","description": "happy day"},
+                    {"id":100,"startTime": "2024-02-01 10:00:00","endTime": "2024-02-01 11:00:00","ownerId": 31,"clientId": 50,"location": "3333 hell st, San Francisco, CA, 94444","type": "appointment","description": null}
                     ]
                 """;
 

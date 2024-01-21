@@ -20,19 +20,20 @@ public class TaskService {
     private UserRepository userRepository;
 
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
     
     public Task findTask(Long id, String ownerName) {
         User owner = userRepository.findByName(ownerName);
-        
-        return taskRepository.findByIdAndOwnerId(id, owner.getId());
+        Long ownerId = owner.getId();
+        return taskRepository.findByIdAndOwnerId(id, ownerId);
     }
 
     public Page<Task> findByOwner(String name, PageRequest pageRequest){
-        Long id = userRepository.findIdByName(name);        
-        return taskRepository.findByOwnerId(id, pageRequest);
+        Long ownerId = userRepository.findIdByName(name);        
+        return taskRepository.findByOwnerId(ownerId, pageRequest);
     }
 
     public boolean existsByIdAndOwner(Long requstId, String name){
@@ -41,8 +42,6 @@ public class TaskService {
     }
 
     public Task saveTask(Task tasktoSave) {
-        
-        
         return taskRepository.save(tasktoSave);
         
     }

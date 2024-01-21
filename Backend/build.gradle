@@ -35,6 +35,9 @@ dependencies {
     // implementation 'org.springframework:spring-webmvc:6.1.0'
     implementation 'org.springframework:spring-orm:6.1.0'
 
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3' // Use the compatible version
+
+
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.1.RELEASE'
     testImplementation 'org.springframework.security:spring-security-test'

@@ -52,7 +52,7 @@ public class TaskController {
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
-                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "time"))));
+                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))));
         return ResponseEntity.ok(page.getContent());
     }
 
@@ -65,7 +65,7 @@ public class TaskController {
         long userId = userService.getUserId(principal.getName());
 
         
-        taskToSave = new Task(null, newTaskRequest.getStart_time(), newTaskRequest.getEnd_time(), userId, newTaskRequest.getClient_id(), newTaskRequest.getLocation(), newTaskRequest.getType(), newTaskRequest.getDescription());
+        taskToSave = new Task(null, newTaskRequest.getStartTime(), newTaskRequest.getEndTime(), userId, newTaskRequest.getClientId(), newTaskRequest.getLocation(), newTaskRequest.getType(), newTaskRequest.getDescription());
         
         Task savedTask = taskService.saveTask(taskToSave);
 
@@ -81,7 +81,7 @@ public class TaskController {
             Principal principal) {
         Task task = taskService.findTask(requestId, principal.getName());
         if (task != null) {
-            Task updateTask = new Task(task.getId(), taskToUpdate.getStart_time(),taskToUpdate.getEnd_time(), userService.getUserId(principal.getName()),taskToUpdate.getClient_id(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
+            Task updateTask = new Task(task.getId(), taskToUpdate.getStartTime(),taskToUpdate.getEndTime(), userService.getUserId(principal.getName()),taskToUpdate.getClientId(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
             taskService.saveTask(updateTask);
             return ResponseEntity.noContent().build();
         }

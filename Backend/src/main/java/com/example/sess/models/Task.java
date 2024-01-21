@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import java.security.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -33,23 +34,23 @@ public class Task {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "task_id")
+    @Column (name = "taskId")
     private Long id;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "startTime", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
-    private LocalDateTime start_time;
+    private LocalDateTime startTime;
 
-    @Column(name = "end_time", nullable = false)
+    @Column(name = "endTime", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
-    private LocalDateTime end_time;
+    private LocalDateTime endTime;
 
 
     @Column(name = "owner", nullable =  false)
-    private long owner_id;
+    private long ownerId;
 
     @Column(name = "client")
-    private Long client_id;
+    private Long clientId;
 
     @Column(name = "location")
     private String location;
@@ -61,12 +62,25 @@ public class Task {
     private String description;
 
 
-    public Task(Long id, LocalDateTime start_time, LocalDateTime end_time, long owner_id, Long client_id, String location, String type, String description) {
-        this.id = id;
-        this.start_time = start_time;
-        this.end_time = end_time;
-        this.owner_id = owner_id;
-        if(client_id != null)  this.client_id = client_id;
+    public Task(Long id, LocalDateTime startTime, LocalDateTime endTime, long ownerId, Long clientId, String location, String type, String description) {
+        if(id != null)  this.id = id;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.ownerId = ownerId;
+        if(clientId != null)  this.clientId = clientId;
+        this.location = location;
+        this.type = type;
+        this.description = description;
+    }
+
+
+    public Task(Long id, String startTime, String endTime, long ownerId, Long clientId, String location, String type, String description) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        if(id != null)  this.id = id;
+        this.startTime = LocalDateTime.parse(startTime,formatter);
+        this.endTime = LocalDateTime.parse(endTime,formatter);
+        this.ownerId = ownerId;
+        if(clientId != null)  this.clientId = clientId;
         this.location = location;
         this.type = type;
         this.description = description;
@@ -80,41 +94,41 @@ public class Task {
         this.id = id;
     }
 
-    public long getId(){
+    public Long getId(){
         return id;
     }
 
-    public LocalDateTime getStart_time() {
-        return this.start_time;
+    public LocalDateTime getStartTime() {
+        return this.startTime;
     }
 
-    public void setStart_time(LocalDateTime start_time) {
-        this.start_time = start_time;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public LocalDateTime getEnd_time() {
-        return this.end_time;
+    public LocalDateTime getEndTime() {
+        return this.endTime;
     }
 
-    public void setEnd_time(LocalDateTime end_time) {
-        this.end_time = end_time;
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
-    public long getOwner_id() {
-        return this.owner_id;
+    public long getOwnerId() {
+        return this.ownerId;
     }
 
-    public void setOwner_id(long owner_id) {
-        this.owner_id = owner_id;
+    public void setOwnerId(long ownerId) {
+        this.ownerId = ownerId;
     }
 
-    public Long getClient_id() {
-        if(this.client_id == null)  return null;
-        return this.client_id;
+    public Long getClientId() {
+        if(this.clientId == null)  return null;
+        return this.clientId;
     }
 
-    public void setClient_id(long client_id) {
-        this.client_id = client_id;
+    public void setClientId(long clientId) {
+        this.clientId = clientId;
     }
 
     public String getLocation() {
@@ -147,11 +161,11 @@ public class Task {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Task task = (Task) obj;
-        return Objects.equals(owner_id, task.owner_id) &&
+        return Objects.equals(ownerId, task.ownerId) &&
                Objects.equals(id, task.id) &&
-               Objects.equals(start_time, task.start_time) &&
-               Objects.equals(end_time, task.end_time) &&
-               Objects.equals(client_id, task.client_id) && 
+               Objects.equals(startTime, task.startTime) &&
+               Objects.equals(endTime, task.endTime) &&
+               Objects.equals(clientId, task.clientId) && 
                Objects.equals(location, task.location) &&
                Objects.equals(type, task.type) &&
                Objects.equals(description, task.description);
@@ -159,7 +173,7 @@ public class Task {
     
     @Override
     public int hashCode() {
-        return Objects.hash(id, start_time, end_time, owner_id, client_id, location, type, description);
+        return Objects.hash(id, startTime, endTime, ownerId, clientId, location, type, description);
     }
 }
     // public Task(Long id, String time, String owner) {
