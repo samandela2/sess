@@ -8,8 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.example.sess.dao.TaskRepository;
-import com.example.sess.models.Task;
+import com.example.sess.dao.*;
+import com.example.sess.models.*;
 import com.example.sess.services.TaskService;
 
 
@@ -17,22 +17,27 @@ import com.example.sess.services.TaskService;
 public class TaskService {
     
     private TaskRepository taskRepository;
+    private UserRepository userRepository;
+
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
     
     public Task findTask(Long id, String ownerName) {
-        return taskRepository.findByIdAndOwner(id, ownerName);
+        User owner = userRepository.findByName(ownerName);
+        
+        return taskRepository.findByIdAndOwnerId(id, owner.getId());
     }
 
-
     public Page<Task> findByOwner(String name, PageRequest pageRequest){
-        return taskRepository.findByOwner(name, pageRequest);
+        Long id = userRepository.findIdByName(name);        
+        return taskRepository.findByOwnerId(id, pageRequest);
     }
 
     public boolean existsByIdAndOwner(Long requstId, String name){
-        return taskRepository.existsByIdAndOwner(requstId,name);
+        Long id = userRepository.findIdByName(name);
+        return taskRepository.existsByIdAndOwnerId(requstId,id);
     }
 
     public Task saveTask(Task tasktoSave) {

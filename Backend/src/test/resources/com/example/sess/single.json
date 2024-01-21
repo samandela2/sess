@@ -1,5 +1,10 @@
 {
     "id": 99,
-    "time": "1/1",
-    "owner": "john"
+    "start_time": "2024-01-01 10:00:00",
+    "end_time": "2024-01-01 11:00:00",
+    "owner_id": 30,
+    "client_id": 50,
+    "location": "3333 hell st, San Francisco, CA, 94444",
+    "type": "appointment",
+    "description": "happy day"
 }

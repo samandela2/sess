@@ -3,9 +3,9 @@ package com.example.sess.controller;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.example.sess.models.Task;
+import com.example.sess.models.*;
 import com.example.sess.services.TaskService;
-
+import com.example.sess.services.UserService;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +29,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class TaskController {
 
     private TaskService taskService;
+    private UserService userService;
 
-    public TaskController(TaskService taskService){
+    public TaskController(TaskService taskService, UserService userService){
         this.taskService = taskService;
+        this.userService = userService;
     }
 
     @GetMapping("/{requestId}")
@@ -55,11 +57,17 @@ public class TaskController {
     }
 
     @PostMapping
+    //todo now for normal user only
     public ResponseEntity<Void> creatTask(@RequestBody Task newTaskRequest, UriComponentsBuilder ucb,
             Principal principal) {
+        
+        Task taskToSave;
+        long userId = userService.getUserId(principal.getName());
 
-        Task tasktoSave = new Task(null, newTaskRequest.getTime(), principal.getName());
-        Task savedTask = taskService.saveTask(tasktoSave);
+        
+        taskToSave = new Task(null, newTaskRequest.getStart_time(), newTaskRequest.getEnd_time(), userId, newTaskRequest.getClient_id(), newTaskRequest.getLocation(), newTaskRequest.getType(), newTaskRequest.getDescription());
+        
+        Task savedTask = taskService.saveTask(taskToSave);
 
         URI locationOfNewTask = ucb.path("tasks/{id}")
                 .buildAndExpand(savedTask.getId())
@@ -73,7 +81,7 @@ public class TaskController {
             Principal principal) {
         Task task = taskService.findTask(requestId, principal.getName());
         if (task != null) {
-            Task updateTask = new Task(task.getId(), taskToUpdate.getTime(), principal.getName());
+            Task updateTask = new Task(task.getId(), taskToUpdate.getStart_time(),taskToUpdate.getEnd_time(), userService.getUserId(principal.getName()),taskToUpdate.getClient_id(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
             taskService.saveTask(updateTask);
             return ResponseEntity.noContent().build();
         }

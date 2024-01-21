@@ -12,7 +12,11 @@ import com.example.sess.models.Task;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long>, PagingAndSortingRepository<Task, Long> {
     
-    Task findByIdAndOwner(long id, String owner);
-    Page<Task> findByOwner(String name, PageRequest pageRequest);
-    boolean existsByIdAndOwner(Long requstId, String name);
+//     Task findByIdAndOwner(long id, String owner);
+//     Page<Task> findByOwner(String name, PageRequest pageRequest);
+//     boolean existsByIdAndOwner(Long requstId, String name);
+
+    Task findByIdAndOwnerId(Long id, Long ownerId);
+    Page<Task> findByOwnerId(Long ownerId, PageRequest pageRequest);
+    boolean existsByIdAndOwnerId(Long requestId, Long ownerId);
 }

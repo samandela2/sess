@@ -1,0 +1,10 @@
+{
+    "id": 101,
+    "start_time": "2024-03-01 12:00:00",
+    "end_time": "2024-03-01 16:00:00",
+    "owner_id": 30,
+    "client_id": null,
+    "location": "33 hl st, San Francisco, CA, 94444",
+    "type": "event",
+    "description": "happy day"
+}
