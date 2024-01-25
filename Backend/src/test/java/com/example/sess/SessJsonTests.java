@@ -121,7 +121,7 @@ public class SessJsonTests {
     }
 
     @Test
-    void cashCardListSerializationTest() throws IOException {
+    void TaskListSerializationTest() throws IOException {
         assertThat(jsonList.write(tasks)).isStrictlyEqualToJson("list.json");
     }
 

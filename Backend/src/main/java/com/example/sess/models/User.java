@@ -1,11 +1,7 @@
 package com.example.sess.models;
 
-
-
-
-
-
 import java.util.Objects;
+import java.util.Optional;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,22 +10,31 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-
 @Entity
-@Table (name = "person")
+@Table(name = "person")
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "person_id")
+    @Column(name = "person_id")
     private Long id;
 
     @Column(name = "name", nullable = false)
-    private String name;
+    private String userName;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(name = "role", nullable = false)
     private String role;
 
+    public String getUserName() {
+        return this.userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
     public Long getId() {
         return this.id;
@@ -37,14 +42,6 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getRole() {
@@ -55,19 +52,30 @@ public class User {
         this.role = role;
     }
 
+    public String getPassword() {
+        return this.password;
+    }
 
-     @Override
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
         User user = (User) obj;
         return Objects.equals(id, user.id) &&
-               Objects.equals(name, user.name) &&
-               Objects.equals(role, user.role);
+                Objects.equals(userName, user.userName) &&
+                Objects.equals(role, user.role);
     }
-    
+
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, role);
+        return Objects.hash(id, userName, role);
     }
+
+   
 }
