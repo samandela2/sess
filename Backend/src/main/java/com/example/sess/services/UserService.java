@@ -59,11 +59,12 @@ public class UserService {
     // }
 
     @Transactional
-    public User createUser(String username, String rawPassword, String role) {
+    public User createUser(String username, String rawPassword, String email, String role) {
         User newUser = new User();
         newUser.setUserName(username);
         newUser.setPassword(passwordEncoder.encode(rawPassword));
         newUser.setRole(role);
+        newUser.setEmail(email);
         // Add other default settings or validations if needed
 
         System.out.println(newUser.getUserName() + " is Saving");

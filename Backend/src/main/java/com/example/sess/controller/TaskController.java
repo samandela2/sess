@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,78 +52,77 @@ public class TaskController {
     }
     
 
-//     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-//     @GetMapping
-//     public ResponseEntity<List<Task>> findAll(Pageable pageable, Principal principal) {
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    @GetMapping
+    public ResponseEntity<List<Task>> findAll(Pageable pageable, Principal principal) {
 
-//         Page<Task> page = taskService.findAll(pageable, principal.getName());
+        Page<Task> page = taskService.findAll(pageable, principal.getName());
         
-//         return ResponseEntity.ok(page.getContent());
-//     }
+        return ResponseEntity.ok(page.getContent());
+    }
 
-//     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-//     @PutMapping("/{requestId}")
-//     public ResponseEntity<Void> updateTask(@PathVariable Long requestId, @RequestBody Task taskToUpdate,
-//             Principal principal) {
-//         // Task task = taskService.findOwnedTask(requestId, principal.getName());
-//         // if (task != null) {
-//         //     Task updateTask = new Task(task.getId(), taskToUpdate.getStartTime(),taskToUpdate.getEndTime(), userService.getUserId(principal.getName()),taskToUpdate.getClientId(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
-//         //     taskService.updateTask(updateTask,principal);
-//         //     return ResponseEntity.noContent().build();
-//         // }
+    //TODO: User can edit all fields for now
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    @PutMapping("/{requestId}")
+    public ResponseEntity<Void> updateTask(@PathVariable Long requestId, @RequestBody Task dataToUpdate,
+            Principal principal) {
+        // Task task = taskService.findOwnedTask(requestId, principal.getName());
+        // if (task != null) {
+        //     Task updateTask = new Task(task.getId(), taskToUpdate.getStartTime(),taskToUpdate.getEndTime(), userService.getUserId(principal.getName()),taskToUpdate.getClientId(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
+        //     taskService.updateTask(updateTask,principal);
+        //     return ResponseEntity.noContent().build();
+        // }
 
-//         // return ResponseEntity.notFound().build();
-//         Task task = taskService.updateTask(requestId, taskToUpdate, principal.getName());     
-//         return task==null ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-//     }
+        // return ResponseEntity.notFound().build();
+        Task task = taskService.updateTask(requestId, dataToUpdate, principal.getName());     
+        return task==null ? ResponseEntity.notFound().build() : ResponseEntity.noContent().build();
+    }
 
     
 
-    //admin
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    // @GetMapping("/admin/{requestId}")
-    // public ResponseEntity<Task> findByIdAdmin(@PathVariable Long requestId, Principal principal) {
-    //     Task task = taskService.findTask(requestId);
-    //     if (task != null) {
-    //         return ResponseEntity.ok(task);
-    //     }
-    //     return ResponseEntity.notFound().build();
-    // }
+    // admin
+    //get
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/{requestId}")
+    public ResponseEntity<Task> findByIdAdmin(@PathVariable Long requestId, Principal principal) {
+        Task task = taskService.findTask(requestId);
+        if (task != null) {
+            return ResponseEntity.ok(task);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    // @GetMapping("/admin")
-    // public ResponseEntity<List<Task>> findAllAdmin(Pageable pageable, Principal principal) {
-    //     Page<Task> page = taskService.findAll(
-    //     PageRequest.of(
-    //             pageable.getPageNumber(),
-    //             pageable.getPageSize(),
-    //             pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))));
-    //     return ResponseEntity.ok(page.getContent());
-    // }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin")
+    public ResponseEntity<List<Task>> findAllAdmin(Pageable pageable) {
+        // Page<Task> page = taskService.findAll(
+        // PageRequest.of(
+        //         pageable.getPageNumber(),
+        //         pageable.getPageSize(),
+        //         pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))));
+        Page<Task> page = taskService.findAll(pageable);
+        return ResponseEntity.ok(page.getContent());
+    }
 
-    // //TODO:
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    // @PostMapping
-    // public ResponseEntity<Void> creatTask(@RequestBody Task newTaskRequest, UriComponentsBuilder ucb,
-    //         Principal principal) {
-    //     long userId = userService.getUserId(principal.getName());
-    //     Task taskToSave = new Task(null, newTaskRequest.getStartTime(), newTaskRequest.getEndTime(), userId, newTaskRequest.getClientId(), newTaskRequest.getLocation(), newTaskRequest.getType(), newTaskRequest.getDescription());
-    //     Task savedTask = taskService.updateTask(userId, taskToSave,principal.getName());
-    //     URI locationOfNewTask = ucb.path("tasks/{id}")
-    //             .buildAndExpand(savedTask.getId())
-    //             .toUri();
-    //     return ResponseEntity.created(locationOfNewTask).build();
-    // }
+    //create
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping
+    public ResponseEntity<?> creatTask(@RequestBody Task newTaskRequest, UriComponentsBuilder ucb,
+            Principal principal) {
+        
+        URI locationOfNewTask = taskService.createATask(newTaskRequest, ucb, principal.getName());
+        return locationOfNewTask == null ? ResponseEntity.status(HttpStatus.CONFLICT).body("Task already exist"):ResponseEntity.created(locationOfNewTask).build();
+    }
 
-    // @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    // @DeleteMapping("/{requestId}")
-    // public ResponseEntity<Void> deleteTask(@PathVariable Long requestId, Principal principal) {
-    //     if (taskService.existsByIdAndOwner(requestId, principal.getName())) {
-    //         taskService.deleteById(requestId);
-    //         return ResponseEntity.noContent().build();
-    //     }
-    //     return ResponseEntity.notFound().build();
-    // }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    @DeleteMapping("/{requestId}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long requestId, Principal principal) {
+        if (taskService.existsByIdAndOwner(requestId, principal.getName())) {
+            taskService.deleteById(requestId);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 
 

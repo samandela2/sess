@@ -7,6 +7,7 @@ import java.util.Optional;
 
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import com.example.sess.dao.*;
 import com.example.sess.models.*;
 import com.example.sess.services.UserService;
 import com.example.sess.services.TaskService;
+import java.net.URI;
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 @Service
@@ -43,60 +46,77 @@ public class TaskService {
         return taskRepository.findByIdAndOwnerId(id, userid);
     }
 
-//     public Task findTask(Long id){
-//         Optional<Task> optionalTask = taskRepository.findById(id);
-//         if (optionalTask.isPresent()) {
-//             Task task = optionalTask.get();
-//             return task;
-//         } else {
-//             return null;
-//         }
-//     }
+    public Task findTask(Long id){
+        Optional<Task> optionalTask = taskRepository.findById(id);
+        if (optionalTask.isPresent()) {
+            Task task = optionalTask.get();
+            return task;
+        } else {
+            return null;
+        }
+    }
 
     
-//     public Page<Task> findAll(PageRequest pageRequest,Long id){
+    public Page<Task> findAll(Pageable pageable,String username){   
+        Long userid = userService.getUserId(username);
+        Page<Task> page = taskRepository.findByOwnerId(userid,
+        PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))
+                ));
+        return page;
+    }
+
+    public Page<Task> findAll(Pageable pageable){   
+        Page<Task> page = taskRepository.findAll(
+            PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))
+                ));
+        return page;
+    }
+
+    public URI createATask(Task newTaskRequest, UriComponentsBuilder ucb,
+    String userName){
+
+        if(isTaskPresent(newTaskRequest))   return null;
+        Task taskToSave = new Task(null, newTaskRequest.getStartTime(), newTaskRequest.getEndTime(), newTaskRequest.getOwnerId(), newTaskRequest.getClientId(), newTaskRequest.getLocation(), newTaskRequest.getType(), newTaskRequest.getDescription());
+        Task savedTask = taskRepository.save(taskToSave);
+        URI locationOfNewTask = ucb.path("tasks/{id}")
+                .buildAndExpand(savedTask.getId())
+                .toUri();
+        return locationOfNewTask;
+    }
+
+
+    public boolean isTaskPresent(Task task){
+        return taskRepository.existsByStartTimeAndEndTimeAndOwnerIdAndClientIdAndLocationAndTypeAndDescription(task.getStartTime(),task.getEndTime(),task.getOwnerId(),task.getClientId(),task.getLocation(),task.getType(),task.getDescription());
+    }
+
+   //TODO: 
+    public Task updateTask(Long id, Task datatoUpdate, String name) {
+
+        Optional<Task> taskBeingUpdated = taskRepository.findById(id);
         
-//         Page<Task> page = TaskRepository.findByOwner(id,
-//         PageRequest.of(
-//                 pageable.getPageNumber(),
-//                 pageable.getPageSize(),
-//                 pageable.getSortOr(Sort.by(Sort.Direction.ASC, "startTime"))));
+        if (taskBeingUpdated.isEmpty()) {
+            return null;
+        }
+        datatoUpdate.setId(taskBeingUpdated.get().getId());
+        taskRepository.save(datatoUpdate);
 
-
-
-//         return taskRepository.findAll(pageRequest);
-//     }
-
-
-//     public Page<Task> findByOwner(String name, PageRequest pageRequest){
-//         Long ownerId = userRepository.findIdByUsername(name);        
-//         return taskRepository.findByOwnerId(ownerId, pageRequest);
-//     }
-
-//     public boolean existsByIdAndOwner(Long requstId, String name){
-//         Long id = userRepository.findIdByUsername(name);
-//         return taskRepository.existsByIdAndOwnerId(requstId,id);
-//     }
-
-//    //TODO: 
-//     public Task updateTask(Long id, Task tasktoUpdate, String name) {
-
-//         // Task task = taskRepository.findByIdAndOwnerId(id, 0)
-//         // Task task = taskService.findOwnedTask(requestId, principal.getName());
-//         // if (task != null) {
-//         //     Task updateTask = new Task(task.getId(), taskToUpdate.getStartTime(),taskToUpdate.getEndTime(), userService.getUserId(principal.getName()),taskToUpdate.getClientId(),taskToUpdate.getLocation(), taskToUpdate.getType(), taskToUpdate.getDescription());
-//         //     taskService.updateTask(updateTask,principal);
-//         //     return ResponseEntity.noContent().build();
-//         // }
-
-
-//         return taskRepository.save(tasktoUpdate);
+        return datatoUpdate;
         
-//     }
+    }
 
-//     public void deleteById(@PathVariable Long requestId){
-//         taskRepository.deleteById(requestId);
-//     }
+    public void deleteById(@PathVariable Long requestId){
+        taskRepository.deleteById(requestId);
+    }
+
+    public boolean existsByIdAndOwner(Long requestId, String name) {
+        return taskRepository.existsByIdAndOwnerId(requestId, userService.getUserId(name));
+    }
 
  
 

@@ -75,9 +75,9 @@ class SessTaskTests {
 	void shouldReturnAllTasksWhenListIsRequested() throws Exception {
 		mockMvc.perform(get("/tasks").with(user("john").roles("USER")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(3))
-				.andExpect(jsonPath("$..id").value(containsInAnyOrder(99, 100, 102)))
-				.andExpect(jsonPath("$..startTime").value(containsInAnyOrder("2024-01-01 10:00:00", "2024-02-01 15:00:00", "2024-04-01 19:00:00")));
+				.andExpect(jsonPath("$.length()").value(2))
+				.andExpect(jsonPath("$..id").value(containsInAnyOrder(99, 100)))
+				.andExpect(jsonPath("$..startTime").value(containsInAnyOrder("2024-01-01 10:00:00", "2024-02-01 15:00:00")));
 			//admin
 			mockMvc.perform(get("/tasks/admin").with(user("kyle").roles("ADMIN")))
 				.andExpect(status().isOk())
@@ -105,7 +105,7 @@ class SessTaskTests {
 		mockMvc.perform(get("/tasks?page=0&size=1&sort=startTime,desc").with(user("john").roles("USER")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[*]", hasSize(1)))
-				.andExpect(jsonPath("$[0].startTime").value("2024-04-01 19:00:00"));
+				.andExpect(jsonPath("$[0].startTime").value("2024-02-01 15:00:00"));
 	}
 
 	@Test
@@ -120,8 +120,8 @@ class SessTaskTests {
 	void shouldReturnASortedPageOfTaskWithNoParametersAndUseDefaultValues() throws Exception {
 		mockMvc.perform(get("/tasks").with(user("john").roles("USER")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[*]", hasSize(3)))
-				.andExpect(jsonPath("$..startTime").value(containsInAnyOrder("2024-01-01 10:00:00", "2024-02-01 15:00:00", "2024-04-01 19:00:00")));
+				.andExpect(jsonPath("$[*]", hasSize(2)))
+				.andExpect(jsonPath("$..startTime").value(containsInAnyOrder("2024-01-01 10:00:00", "2024-02-01 15:00:00")));
 	}
 
 	
@@ -131,7 +131,7 @@ class SessTaskTests {
 	@Transactional
 	void shouldCreateANewTask() throws Exception {
 		Task newTask = new Task(null, "01/02/2024 13:00:00",
-                "01/02/2024 14:00:00", 30L, 51L,
+                "01/02/2024 14:00:00", 1L, 51L,
                 "3333 hell st, San Francisco, CA, 94444", "appointment", "happy dayyyyy");
 		String newTaskJson = objectMapper.writeValueAsString(newTask);
 
@@ -144,18 +144,37 @@ class SessTaskTests {
 
 		String location = result.getResponse().getHeader("Location");
 
-		mockMvc.perform(get(location).with(user("kyle").roles("ADMIN")))
+		mockMvc.perform(get(location).with(user("john").roles("USER")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").isNumber())
 				.andExpect(jsonPath("$.startTime").value("2024-01-02 13:00:00"));
 	}
+
+	@Test
+	@Transactional
+	void shouldNotCreateADuplicateTask() throws Exception {
+		Task newTask = new Task(null, "01/01/2024 10:00:00",
+                "01/01/2024 11:00:00", 1L, 50L,
+                "3333 hell st, San Francisco, CA, 94444", "appointment", "happy day");
+				
+				String newTaskJson = objectMapper.writeValueAsString(newTask);
+
+				MvcResult result = mockMvc.perform(post("/tasks")
+						.with(user("kyle").roles("ADMIN"))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(newTaskJson))
+						.andExpect(status().isConflict())
+						.andReturn();
+						
+	}
+
 
 	// update
 	@Test
 	@Transactional
 	void shouldUpdateExistingTask() throws Exception {
 		Task taskToUpdate = new Task(null, "01/01/2024 10:30:00","01/01/2024 11:00:00",
-                 31L, 51L, "33 hl st, San Francisco, CA, 94444",
+                 1L, 51L, "33 hl st, San Francisco, CA, 94444",
                 "appointment", "happy day");
 		String taskJson = objectMapper.writeValueAsString(taskToUpdate);
 
@@ -223,9 +242,9 @@ class SessTaskTests {
 
 	@Test
 	void shouldRejectUsersWhoIsNotTaskOwnerOrAdmin() throws Exception {
-		mockMvc.perform(get("/tasks/99").with(httpBasic("jane", "abc456")))
+		mockMvc.perform(get("/tasks/99").with(user("jane").roles("USER")))
 				.andExpect(status().isNotFound());
-		mockMvc.perform(get("/tasks/admin/99").with(httpBasic("jane", "abc456")))
+		mockMvc.perform(get("/tasks/admin/99").with(user("jane").roles("USER")))
 				.andExpect(status().isForbidden());
 		mockMvc.perform(get("/tasks/admin/99").with(user("kyle").roles("ADMIN")))
 				.andExpect(status().isOk());
@@ -234,7 +253,7 @@ class SessTaskTests {
 
 	@Test
 	void shouldNotAllowAccessToTaskTheyDoNotOwn() throws Exception {
-		mockMvc.perform(get("/tasks/101").with(httpBasic("jane", "abc456")))
+		mockMvc.perform(get("/tasks/101").with(user("jane").roles("USER")))
 				.andExpect(status().isOk());
 	}
 

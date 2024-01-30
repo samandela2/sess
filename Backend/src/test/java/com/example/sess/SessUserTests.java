@@ -53,14 +53,13 @@ class SessUserTests {
 	}
 	
 
-	@Test
-	void contextLoads() {
-	}
-
+	
     @Test
     @Transactional
     void shouldCreateANewUser(){
-        User nUser = userService.createUser("jay", "pwd123", "User");
+        User nUser = userService.createUser("jay", "pwd123", "1@gmail.com","User");
         assertThat(nUser).isNotNull();
     }
+
+
 }
